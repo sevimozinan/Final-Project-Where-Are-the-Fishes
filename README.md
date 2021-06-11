@@ -1,8 +1,8 @@
 # Where-Are-the-Fishes-
 Exploring acoustic backscatter data to find fish in the US Atlantic Ocean. 
 
-Deniz bilimcileri, okyanustaki organizmaların dağılımını anlamak için akustik geri saçılım kullanırlar.
+Reflections. No, I’m not talking about contemplating your existence within the Tidyverse or understanding what that spline did to your data. I’m talking about echoes. Specifically, acoustic echoes called “backscatter.” Marine scientists use acoustic backscatter to understand the distribution of organisms in the ocean.
 
-Bu analizde Sevim Özinan, Yasemin Hızarcı ve Mehtap Fil ile birlikte aktif akustik verileri tartıştık ve batimetri (deniz tabanının derinliği) ile ilişkili olarak yüzme keseli balıklara ilişkili ortalama hacim geri saçılımını çizdik. 
+In this analysis, together with Sevim Ozinan, Mehtap Fil and Yasemin Hizarci we discussed wrangle active acoustic data and plotted the mean volume backscatter associated with fish with swim-bladders in relation to bathymetry (depth of the seafloor)
 
-Bu akustik veriler, Orta Atlantik Körfezi’ndeki (NOAA seyir HB1103) Shelf Break’den geçen bir araştırma gemisinden toplandı ve Echoview yazılımı kullanılarak ön işlemden geçirildi.
+These acoustic data were collected from a research vessel that crossed the shelf break in the Mid-Atlantic Bight (NOAA cruise HB1103) and were preprocessed using the software, Echoview.
