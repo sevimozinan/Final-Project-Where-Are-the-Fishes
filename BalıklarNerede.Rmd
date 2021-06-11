@@ -1,0 +1,688 @@
+---
+title: "BALIKLAR NEREDE?"
+author: "Yasemin Hızarcı,Sevim Özinan,Mehtap Fil"
+output:
+  rmdformats::material:
+  self_contained: false
+  code_folding: show
+  thumbnails: true
+  gallery: true
+---
+
+<style type="text/css">
+body,td {
+  font-size: 11pt;
+  font-weight:bold;
+}
+code.r{
+font-weight:bold;
+}
+pre {
+font-weight:bold;
+}
+h1.title {
+color:#66023C;
+font-size:24pt;
+font-weight:600;
+}
+h1 {
+color:#66023C;
+font-size:20pt;
+font-weight:600;
+}
+h2 {
+color:black;
+font-size:18pt;
+font-weight:600;
+}
+h3 {
+color:black;
+font-size:14pt;
+font-weight:600;
+}
+
+</style>
+
+
+
+ 
+```{css,echo=FALSE}
+.watch-out {
+  background-color:#FFCCFF;
+ 
+  font-weight: bold;
+}
+.watch-out1 {
+  background-color:#CCFFCC;
+  font-weight: bold;
+}
+
+
+```
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(class.source="watch-out",class.output="watch-out1")
+```
+
+
+
+```{r include=FALSE}
+library(knitr)
+library(rmdformats)
+```
+
+```{r echo=FALSE, fig.align='center', out.width='100%'}
+
+knitr::include_graphics('C:/Users/yasem/OneDrive/Masaüstü/foto.jpeg')
+
+
+```
+
+
+
+
+
+
+
+
+
+
+# 1.AŞAMA 
+
+## Backscatter(Geri Saçılma) - Okyanusta uzaktan algılama
+
+
+
+
+### **AÇIKLAMALAR**
+
+Deniz bilimcileri, okyanustaki organizmaların dağılımını anlamak için akustik geri saçılım kullanırlar.
+
+Bu analizde, aktif akustik verileri tartışacağız ve batimetri (deniz tabanının derinliği) ile ilişkili olarak yüzme keseli balıklara ilişkili ortalama hacim geri saçılımını çizeceğiz.
+
+Bu akustik veriler, Orta Atlantik Körfezi'ndeki (NOAA seyir HB1103) Shelf Break'den geçen bir araştırma gemisinden toplandı ve Echoview yazılımı kullanılarak ön işlemden geçirildi.
+
+
+### **TALİMATLAR**
+
+
+<span style='color:maroon; font-weight:600'>*1)Derinlik verilerini yükleyin.*
+
+<span style='color:maroon; font-weight:600'>*2)Aşağıdaki paketleri yükleyin: *
+
+<span style='color:maroon; font-weight:600'>**dplyr**
+
+<span style='color:maroon; font-weight:600'>**readr**
+
+<span style='color:maroon; font-weight:600'>**lubridate**
+
+<span style='color:maroon; font-weight:600'>**ggplot2**
+
+<span style='color:maroon; font-weight:600'>**patchwork.**
+
+<span style='color:maroon; font-weight:600'>*3)Derinlik verilerini okutun datasets/bottom_line.csv,read_csv() kullanın ve  bottom atayın.*
+
+<span style='color:maroon; font-weight:600'>*4)ping_date değişkeni için Ay / gün / 4 basamaklı yıl olarak doğru tarih  biçimini kullanın ve tüm değişkenleri küçük harfle yazın.*
+
+<span style='color:maroon; font-weight:600'>*5)Ham verilerin yapısına ve ilk birkaç gözlemine bakmak için glimpse() kullanın.*</span>.
+
+
+
+
+```{r echo=FALSE, fig.align='center', out.width='80%'}
+knitr::include_graphics('C:/Users/yasem/OneDrive/Masaüstü/paketler.png')
+
+```
+
+
+
+
+```{r message=FALSE, warning=FALSE}
+
+# Paketleri Yükleyelim
+
+library(tidyverse)
+library(dplyr) #veri üzerinde düzenlemeler yapabilmek için kullanılacak.
+library(readr) #verileri okutmak için kullanılacak.
+library(lubridate) #tarihlerle çalışabilmek için kullanılacak.
+library(ggplot2) #grafikler için kullanılacak.
+library(patchwork) #aynı anda birden fazla grafiği çizdirebilmek için kullanılacak.
+library(geosphere) #coğrafi hesaplamalar için kullanılıyor.
+#Enlem ve boylam arasındaki mesafenin hesaplanması için kullanılacak.
+
+```
+
+```{r}
+# Derinlik verilerini okutalım
+
+bottom<-read_csv("C:/Users/yasem/OneDrive/Masaüstü/BaliklarNerede/bottom_line.csv", 
+                 col_types = cols(Ping_date=col_datetime(format="%m/%d/%Y")))%>% 
+  #veri setinde Ping_date degişkeni ay,gün,yıl formatındaydı.
+  #Bu değişken tarih formatına dönüştürüldü.
+  rename_all(tolower) 
+#rename_all tüm değişken isimlerine bir işlem uygulamak için kullanılır.
+#Tüm değişken isimleri küçük harfe dönüştürüldü.
+
+glimpse(bottom) #verinin yapısını inceleyeceğiz.
+```
+
+**Veri Setimizdeki değişkenleri tanıyalım.** 
+
+**1)** <span style='color:maroon'>**ping_date :** *deniz altında gözlemlenen uğultuların tarihi.* 
+
+**2)** <span style='color:maroon'>**ping_time :** *deniz altında gözlemlenen uğultuların saati.* 
+
+**3)** <span style='color:maroon'>**ping_milliseconds :** *deniz altında gözlemlenen uğultuların kaç* milisaniye boyunca sürdüğü. 
+
+**4)** <span style='color:maroon'>**latitude:** *enlem.* 
+
+**5)** <span style='color:maroon'>**longitude:** *boylam.*
+
+**6)** <span style='color:maroon'>**position_status:** *pozisyon durumu.*
+
+**7)** <span style='color:maroon'>**depth:** *derinlik.*
+
+**8)** <span style='color:maroon'>**line_status:** *hat durumu.* 
+
+**9)** <span style='color:maroon'>**ping_status:** *uğultu durumu.* 
+
+**10)** <span style='color:maroon'>**altitude:** *rakım.*
+
+
+
+# 2.AŞAMA
+
+## "Shelf Break"Nedir?
+
+### AÇIKLAMA
+
+```{r echo=FALSE, fig.align='center', out.width='40%'}
+knitr::include_graphics('C:/Users/yasem/OneDrive/Masaüstü/gemi1.png')
+
+```
+
+
+Soldaki haritadaki kırmızı çizgi, geminin Orta Atlantik Körfezi'ndeki "Shelf Break" boyunca izlediği yol. Ama "Shelf Break" nedir? 
+
+Bir uçurumun su altı versiyonu olarak tanımlanabilir.
+
+Çoğu deniz ekosisteminde, Shelf Break aynı zamanda birçok türe yiyecek ve yaşam alanı sağlayan oldukça dinamik ve verimli bir alandır. En küçük fitoplanktonlardan en büyük deniz canlılarına, köpekbalıklarına, deniz kuşlarına ve deniz kaplumbağalarına kadar hepsi bu alanı yaşam döngülerinin bir noktasında kullanırlar. Ve bu harika bölgeden bazı aktif akustik verilerle çalışacağız!
+
+Ama önce batimetri (derinlik) verilerini temizleyelim ve çizim için hazırlayalım.
+
+
+
+
+
+### **TALİMATLAR**
+
+<span style='color:maroon; font-weight:600'>*1)Bottom verisini temizle*
+
+<span style='color:maroon; font-weight:600'>*2)Noktaları tutmak için derinlik verilerini position_status 1'e eşit olacak şekilde Filtreleyin ve  ping_date, ping_time, latitude, longitude, ve depth değişkenlerini seçin.*
+
+<span style='color:maroon; font-weight:600'>*3)ping_date + ping_time ile yeni bir tarih-saat sütunu oluştur ve date_time olarak kaydet.*
+
+<span style='color:maroon; font-weight:600'>*4)Temizlenmiş verilerin yapısına ve ilk birkaç gözlemine bakmak için glimpse() kullanın.*
+
+<span style='color:maroon; font-weight:600'>*5) GPS konumu (boylam ve enlem) arasındaki mesafe(metre) ile distance_between değişkenini oluştur.*
+
+```{r}
+# Derinlik verilerini temizleyelim
+
+bottom_clean<-bottom %>%
+filter(position_status==1)%>%   
+  #position_status 1 e eşit olan satırlar filtrelendi.
+select(ping_date,ping_time,latitude,longitude,depth)%>% 
+  #talimatlarda belirtilen değişkenler seçildi.
+mutate(date_time=ping_date + ping_time,     
+       #tarih ve saat değişkenleri birleştirilerek date_time değişkeni oluşturuldu.
+         distance_between=c(0,
+        geosphere::distHaversine(cbind(longitude[-n()],latitude[-n()]), 
+                #longitude=boylam, latitude=enlem
+          cbind(longitude[ -1],latitude[ -1]))), 
+       #distHaversine komutu ile enlem ve boylam arasındaki mesafe bulundu 
+       #bu şekilde distance_between oluşturuldu.
+         distance_along=cumsum(distance_between)) 
+#distance_between değişkeninin kümülatif toplamları ile distance_along oluşturuldu.
+
+# Veriyi inceleyelim
+
+glimpse(bottom_clean) #değişkenlerin yapısına bakalım
+```
+
+(R'deki sütun sıraları boyunca enlem ve boylam arasındaki mesafeyi hesaplamak için yararlandığımız kaynak : https://stackoverflow.com/questions/47115848/how-can-i-calculate-the-distance-between-latitude-and-longitude-along-rows-of-co)
+
+# 3. AŞAMA 
+
+## Nereye gidersen git,oradasın
+ 
+### AÇIKLAMALAR 
+
+Artık kötü veri noktalarını kaldırdığımıza ve geminin kat ettiği kümülatif mesafeyi hesapladığımıza göre, verileri planlayalım.
+
+Geminin rotasının yatay görünümü, geminin rota hattından sapıp sapmadığını veya verilerde herhangi bir kesinti olup olmadığını bize gösterecektir.
+
+Rota çizgisi boyunca deniz tabanının derinliğinin bir grafiği bize Shelf Break'ın konumunu gösterecektir. Şimdi, rota çizgisi boyunca enlem, boylam, derinlik ve mesafe ile birkaç rota çizgisi grafiği oluşturacağız.
+
+### TALİMATLAR
+
+<span style='color:maroon;font-weight:600'>*1)Temizlenmiş derinlik verilerinin grafiğini çizelim! Daha kolay görüntüleme için grafiklerin boyutunu değiştirin.*
+
+<span style='color:maroon;font-weight:600'>*2)Boylam (x) ve enlem (y) için bir nokta grafiği yapın ve noktaların boyutunu 0,5 olarak ayarlayın.*
+
+<span style='color:maroon; font-weight:600'>*3)track line(rota çizgisi) (x) ve derinlik (y) boyunca bir mesafe nokta grafiği yapın ve noktaların boyutunu 0,5 olarak ayarlayın. Y eksenini scale_y_reverse() ile ters çevirin.*
+
+<span style='color:maroon; font-weight:600'>*4)patchwork ile grafikleri yan yana düzenleyebilirsiniz.*
+
+<span style='color:maroon; font-weight:600'>*5)Deniz yüzeyi 0 metredir. Bu derinlik verileri pozitif olduğu için y ekseninin ters çevrilmesi gerekir.*
+
+```{r}
+# Grafiklerin boyutunu ayarlayalım
+
+options(repr.plot.width=7, repr.plot.height=5) 
+#Grafiklerin genişlik ve yüksekliği ayarlandı.
+
+# Geminin rotasını çizelim
+
+p_ship_track <-ggplot(bottom_clean, aes(longitude,latitude))+ 
+  #x ekseninde boylam, y ekseninde enlem olacak şekilde grafik oluşturuluyor.
+  geom_point(size=0.5)+ 
+  #nokta grafiği çizdirilecektir ve nokta büyüklüğü ayarlanıyor.
+  labs(x="Longitude",y="Latitude") 
+#x ve y eksenlerine değişkenlerin isimleri verildi.
+
+# Geminin yolu boyunca deniz tabanının derinliğini çizin.
+
+p_bathymetry<-ggplot(bottom_clean,aes(distance_along,depth))+ 
+  #distance_along=geminin yolu,depth=derinlik
+  geom_point(size=0.5)+
+  scale_y_reverse()+  #y ekseni ters çevriliyor
+  labs(x="Distance along trackline (m)",y="Depth (m)")  
+#x ve y eksenleri isimlendirildi.
+
+# Grafikleri yan yana çizdirelim.
+
+p_ship_track+p_bathymetry
+```
+
+(Yararlandığımız kaynak : https://www.data-imaginist.com/2019/patch-it-up-and-send-it-out/)
+
+
+# 4.AŞAMA
+
+## Burada balıklar,balıklar,balıklar
+
+
+```{r echo=FALSE, fig.align='center', out.width='140%'}
+knitr::include_graphics('C:/Users/yasem/OneDrive/Masaüstü/balıklar.jpg')
+
+```
+
+### AÇIKLAMALAR
+
+
+Hacim geri saçılımı (Sv), organizmaların göreceli yoğunluğunun bir ölçüsüdür. Bu durumda, balık benzeri saçılmayı aramak için Echoview'deki verileri önceden işlediğimiz için, hacim geri saçılım verilerinin son grafiği olan Sv_mean, bize balıkların yol çizgisi boyunca dağılımının bir göstergesini verecektir.
+
+Balık olması durumunda, yol hattının daha yüksek / daha düşük yoğunluklu bölümleri olacak mı? Hadi bulalım!
+
+### TALİMATLAR
+
+<span style='color:maroon; font-weight:600'>*1)Akustik verileri yükleyin ve temizleyin.*
+
+<span style='color:maroon; font-weight:600'>*2) datasets/acoustic.csv ve read_csv() kullanarak Acoustic veriyi okutun.Herhangi bir kötü konum verilerini çıkarmak için (örneğin, Lon_M 999.0 a eşit olmayanları almak için) filter() kullan.*
+
+<span style='color:maroon; font-weight:600'>*3)Yapıya ve bazı değerlere bakmak için yeni verilere göz atın.*
+
+<span style='color:maroon; font-weight:600'>*Akustik veriler, Grid Cell başına üç Boylam / Enlem konumuna sahiptir. Lon_S/ Lat_S Grid hücresinin başlangıcı için. Lon_M/ Lat_M Grid hücresinin orta noktası için. Lon_E/ Lat_E Grid hücresinin uç noktası için.*
+
+
+
+```{r message=FALSE, warning=FALSE}
+
+# Akustik veriyi okutalım
+
+acoustic<-read_csv("C:/Users/yasem/OneDrive/Masaüstü/BaliklarNerede/acoustic.csv",
+                   col_types=cols(Date_M=col_datetime(format="%Y%m%d")))%>%  
+  # Date_M değişkeninin  Yıl,ay,gün formatında olduğu belirtildi ve
+  # tarih formatına dönüştürüldü.
+  filter(Lon_M !=999.0) 
+# Lon_M 999.0 a eşit olmayanlar filtrelendi.
+
+# Verinin yapısını inceleyelim
+glimpse(acoustic)
+
+```
+
+(Yararlandığımız kaynak : https://www.rdocumentation.org/packages/base/versions/3.5.1/topics/Logic , https://www.rdocumentation.org/packages/base/versions/3.5.2/topics/strptime )
+
+# 5.AŞAMA
+
+## Bu çok fazla değişken
+
+
+### AÇIKLAMALAR
+
+
+Vaov! 78 değişkenin 724 gözlemi! Bu, Echoview'den tam veri dışa aktarımıdır, ancak yalnızca hacim geri saçılım verileri, Sv_mean ve verileri çizmek için gereken diğer birkaç değişkenle ilgileneceğiz.
+
+Bu geri saçılım verileri, geminin yolu boyunca 200 metre (Interval(Aralık) = 1), 250 metre derinlikte (Layer(Katman) = 1), geminin yoluna ve derinliğine atıfta bulunan bir koordinat sistemi oluşturan Grid hücrelerine entegre edildi.. İlk derinlik katmanını keşfedeceğiz.
+
+Interval(aldığı yol) değişkeninde; 200 metre "1", 800 metre ise "3" olarak kodlanmıştır. Layer(Katman) değişkeninde ise 250 metre "1", 500 metre "2" olarak kodlanmıştır. 
+
+### TALİMATLAR
+
+<span style='color:maroon; font-weight:600'>*1)Akustik verileri temizleyin.*
+
+<span style='color:maroon; font-weight:600'>*2)variables_keep adında çağrılacak değişkenler listesi oluşturun.*
+
+<span style='color:maroon; font-weight:600'>*3)variables_keep deki değişkenleri tutmak için select() kullanın . Sütun adlarını rename() komutu ile değiştirin Interval'ı Spatial_interval olarak değiştir ve Date_M'i Date olarak değiştir.*
+
+<span style='color:maroon; font-weight:600'>*4)Verileri ilk derinlik katmanından korumak için filtreleyin. Tarih sütununu ve doğru zaman sütununu ekleyerek başlangıç ( Datetime_start) ve bitiş ( Datetime_end) zaman değişkenlerini oluşturun.*
+
+<span style='color:maroon; font-weight:600'>*5)Temizlenmiş verilere bir göz atın.*
+
+<span style='color:maroon; font-weight:600'>*Date_M; adını değiştirdiğiniz Date tarih sütunudur . Time_S başlangıç saati. Time_E bitiş saatidir.*
+
+
+```{r}
+# Tutulacak değişkenlerin bir listesini oluşturun
+
+variables_keep <- c("Interval", "Layer", "Sv_mean", "Frequency", 
+               "Date_M", "Time_S", "Time_E", "Lat_M", "Lon_M")  
+#Kullanılacak değişkenler variables_keep olarak alındı.
+
+# Verileri seçin ve filtreleyin
+
+Sv_layer1 <- acoustic %>%
+    select(one_of(variables_keep)) %>%  
+  #Variables_keep deki değişkenler seçildi
+    rename(Spatial_interval = Interval, Date = Date_M) %>% 
+  #isim değişiklikleri yapıldı.
+    filter(Layer == "1")  %>%   
+  #Layer 1 e eşit olan satırlar filtrelendi.
+    mutate(Datetime_start = Date + Time_S,
+           #Tarih ve başlangıç saati birleştirilerek Datetime_start oluşturuldu.
+           Datetime_end = Date + Time_E)  %>% 
+  #Tarih ve bitiş saati birleştirilerek Datetime_end oluşturuldu.
+    arrange(Datetime_start) 
+#Datetime_start artan sırada ayarlandı.
+
+# Temizlenmiş akustik verilere bir göz atalım.
+glimpse(Sv_layer1)
+```
+
+
+**Sv_layer1 Veri Setimizdeki değişkenleri tanıyalım.** 
+
+**1)** <span style='color:maroon'>**Spatial_interval :** *uzamsal aralık.* 
+
+**2)** <span style='color:maroon'>**Layer :** *katman.* 
+
+**3)** <span style='color:maroon'>**Sv_mean :** *balıkların yol çizgisi boyunca dağılımının bir göstergesi.* 
+
+**4)** <span style='color:maroon'>**Frequency:** *frekans.* 
+
+**5)** <span style='color:maroon'>**Date:** *tarih.*
+
+**6)** <span style='color:maroon'>**Time_S:** *başlangıç saati*
+
+**7)** <span style='color:maroon'>**Time_E:** *bitiş saati.*
+
+**8)** <span style='color:maroon'>**Lat_M:** *grid hücresinin başlangıç noktası.* 
+
+**9)** <span style='color:maroon'>**Lon_M:** *grid hücresinin uç noktası.* 
+
+**10)** <span style='color:maroon'>**Datetime_start:** *tarih ve başlangıç saatinin birleştirilişmiş hali*
+
+**11)** <span style='color:maroon'>**Datetime_end:** *tarih ve bitiş saatinin birleştirilişmiş hali*
+
+# 6. AŞAMA
+
+## Biraz daha tartışma
+
+```{r echo=FALSE, fig.align='center', out.width='100%'}
+knitr::include_graphics('C:/Users/yasem/OneDrive/Masaüstü/derinlik.jpg')
+
+```
+
+
+### AÇIKLAMA
+
+Harika! Bütün bunlar güzelce bir araya geliyor. Bottom_clean'de derinlik, yol çizgisi boyunca mesafe ve zaman değişkenleri var. Artık zaman değişkenleri olan ancak rota çizgisi boyunca mesafe ve derinlik bilgisi olmayan (buna bir dakika içinde ulaşacağız) neredeyse temiz bir akustik veri kümesine sahibiz, Sv_layer1. Ayrıca Echoview, NA'ları belirtmek için -999.0 kullanır. Bunları kaldırmamız gerek yoksa geri saçılma planımız biraz riskli görünecek.
+
+### TALİMATLAR
+
+<span style='color:maroon;font-weight:600'>*1)Akustik verileri temizleyin.*
+
+<span style='color:maroon;font-weight:600'>*2)Uygun işlevleri oluşturun Distance_between ve Distance_along kullanın.*
+
+<span style='color:maroon; font-weight:600'>*3)-999.0 değerlerini NA ile değiştirin ve başlangıç ve bitiş zamanlarını kullanarak Time_interval ile çağrılan bir zaman aralığı oluşturun.*
+
+<span style='color:maroon;font-weight:600'>*4)Temizlenmiş verilere bir göz atın.*
+
+<span style='color:maroon;font-weight:600'>*5)Nokta verisi olan bottom verisinden farklı olarak, akustik veriler, Grid hücresinin başlangıcı, ortası ve sonu için enlem ve boylamlara sahip Grid hücrelerine entegre edilir. Her bir Grid hücresi arasındaki mesafeyi hesaplamak ve ona Distance_between atamak için orta noktaları ( Lon_M, Lat_M) kullanıyorsunuz*
+
+```{r}
+# Geçici aralık birleştirme için veri hazırlığı
+
+Sv <- Sv_layer1 %>% 
+    mutate(Distance_between = c(0,
+      geosphere::distHaversine(cbind(Lon_M[-n()], Lat_M[-n()]),
+      cbind(Lon_M[  -1], Lat_M[  -1]))), 
+      #aradaki mesafe bulundu.
+           Distance_along = cumsum(Distance_between)) %>% 
+  #Distance_between için kümülatif toplamlar bulundu ve Distance_along oluşturuldu.
+    na_if(-999) %>%  #-999'un NA oldugu belirtildi.
+    mutate(Time_interval = interval(Datetime_start, Datetime_end)) 
+#interval() komutu başlangıç ve bitiş tarihlerini yan yana getirerek birleştirdi 
+#Time_interval oluşturuldu.
+
+# Veriyi inceleyelim
+glimpse(Sv)
+```
+
+# 7.AŞAMA
+
+## Uzamsal olamıyor musunuz zamansal gidin
+
+### AÇIKLAMALAR
+
+Akustik dosyada derinlik bilgisi yok. Bu tam olarak doğru değil. Bu 78 değişkenden biri ortalama derinlikti, ancak ortalamanın bir ortalamasıydı ve bottom_clean'da sahip olduğumuz derinlik verileri kadar doğru değildi.
+
+İki veri setinin farklı uzamsal çözünürlüklere sahip olduğunu da fark etmiş olabilirsiniz. Derinlik verilerini bottom_clean'den nasıl çekip akustik verilerle birleştirebiliriz? Bunu yapmanın birkaç farklı uzamsal yolu var, ancak uzamsal paketlerde çalışmadığımız için, bottom_clean'dan hangi veri noktalarının az önce oluşturduğumuz Zaman aralığı, içinde olduğunu bulmak için bir fonksiyon yazacağız.
+
+
+### TALİMATLAR
+
+<span style='color:maroon;font-weight:600'>*1)Temizlenmiş Bottom verisindeki her noktaya doğru uzamsal aralığı atayın .get_Interval_by_time()'ı oluşturun.*
+
+<span style='color:maroon;font-weight:600'>*2)bottom_clean verisinde trackline_interval'ı map_dbl() kullanarak oluşturun.*
+
+<span style='color:maroon;font-weight:600'>*3)İlk 15 satırı inceleyin.trackline_interval sütununa dikkat edin.*
+
+<span style='color:maroon;font-weight:600'>*4)get_Interval_by_time();akustik verilerden Spatial_interval değişkeninin  bottom verisindeki akustik zamansal aralıklarla düşen noktalara Time_interval değerleri atayan bir işlevdir*
+
+```{r}
+# İşlevi adlandırın.
+get_Interval_by_time <- function(bottom_data){
+  res <- Sv$Spatial_interval[bottom_data%within%Sv$Time_interval] 
+  # mevcut veriden, Sv verisindeki Time_interval zaman aralığında olan yerler 
+  # alınarak buralara göre,Sv deki Spatial_interval değerlerini atayacak 
+  # bir fonksiyon oluşturuldu.
+  if(length(res)==0) return(NA)         # NA lar
+  return(res)
+}
+ 
+# Rota çizgisi aralığı değerini bottom_clean verilerine eşleyin.
+
+bottom_spatial_interval_segments <- bottom_clean  %>% 
+    mutate(trackline_interval = purrr::map_dbl(date_time, get_Interval_by_time)) 
+# map_dbl çift vektörleri döndürür.
+# bottom_clean daki date_time değişkenine fonksiyon uygulandı 
+# ve sv deki Time_interval aralığında olan tarihler alınarak 
+# buralara denk gelen spatial interval değerleri atandı.
+# Bu şekilde bottom_clean verisinde trackline_interval değişkeni oluşturuldu.
+
+# İlk 15 satırı inceleyin.
+knitr::kable(head(bottom_spatial_interval_segments, 15))
+
+```
+
+# 8.AŞAMA
+
+## Bir aralığın derinliği
+
+### AÇIKLAMALAR
+
+Artık bottom_spatial_interval_segments'teki her veri noktasına atanan akustik verilerden uzamsal izleme çizgisi aralıklarına sahip olduğumuza göre, rota çizgisi boyunca her bir izleme çizgisi aralığı için ortalama derinliği hesaplayabiliriz. Ardından, Spatial_interval ve trackline_interval üzerindeki iki veri kümesini birleştirmemiz gerekecek.
+
+Yalnızca ilk derinlik katmanına (0 ila 250 m) baktığımızı unutmayın. Tüm su sütunu üzerine entegre edilmiş verileri çizdiğimizi ima etmek istemediğimiz için, 250 m'den büyük derinlikleri 250 ile değiştireceğiz.
+
+### TALİMATLAR
+
+<span style='color:maroon;font-weight:600'>*1)Her bir rota hattı aralığı için ortalama derinliği özetleyin.*
+
+<span style='color:maroon;font-weight:600'>*2)Grup bottom_spatial_interval_segments tarafından trackline_interval ve her aralık için ortalama derinliği özetleyin.*
+
+<span style='color:maroon;font-weight:600'>*3)bottom_intervals'ı Akustik verilere katın ve 250 metreden büyük her derinlik değerini 250 ile değiştiren  depth_plot değişkenini oluşturun .*
+
+<span style='color:maroon;font-weight:600'>*4)Yeni veri kümesine bir göz atın.*
+
+```{r message=FALSE, warning=FALSE}
+# Bottom_clean'i gruplayın ve ortalama derinliği hesaplayın
+
+bottom_intervals<-bottom_spatial_interval_segments %>%
+  group_by(trackline_interval) %>% 
+  # veriyi trackline_interval ile grupluyoruz.
+  summarize(depth_mean=mean(depth)) %>% 
+  #derinliğin ortalamasını bulup depth_mean a eşitliyoruz. 
+  ungroup()
+
+bottom_intervals
+```
+
+bottom_spatial_interval_segments verisinin trackline_interval e göre gruplanmış halini görüyoruz.Her grup için ortalama derinlik hesaplanmıştır.
+
+
+```{r}
+# Bottom_intervals verilerini akustik veriyle birleştirin
+
+Sv_and_depth<-Sv %>%
+  left_join(bottom_intervals,by=c("Spatial_interval"="trackline_interval")) %>% 
+  # bottom_intervals verisindeki tracline_interval değişkeninin 
+  # Spatial_interval değişkeni olduğu belirtildi ve 
+  # iki veri bu ortak Spatial_interval değişkeni kullanılarak birleştirildi.
+  mutate(depth_plot=ifelse(depth_mean >=250,250,depth_mean))
+# 250 den büyük her ortalama derinlik değeri 250 oldu.
+#bu şekilde depth_plot değişkeni oluşturuldu.
+
+# Veriyi inceleyelim
+
+glimpse(Sv_and_depth)
+```
+
+
+
+# 9.AŞAMA
+
+## Hepsini bir araya getirmek
+
+### AÇIKLAMALAR
+
+Çok fazla veri tartışması yaptık!
+
+Şimdi, yüksek ve düşük yoğunluklu balıkların rota hattı boyunca nerede olduğunu bulmak için Sv_mean'ı batimetriye (depth_plot) göre çizelim. Y eksenlerimiz iki farklı ölçekte olduğundan, iki grafik oluşturacağız ve onları tek bir şekle yerleştirmek için patchwork paketini tekrar kullanacağız.
+İhtiyacınız olan tüm veriler Sv_and_depth de mevcut.
+
+```{r echo=FALSE, fig.align='center', out.width='100%'}
+knitr::include_graphics('C:/Users/yasem/OneDrive/Masaüstü/batimetri.jpg')
+```
+
+### TALİMATLAR
+
+<span style='color:maroon;font-weight:600'>*1)Sv_and_depth kullanarak son grafiği oluşturalım.*
+
+<span style='color:maroon;font-weight:600'>*2)Üst paneldeki grafikte Sv_mean(y ekseni) ve rota çizgisi (x ekseni) olsun.*
+
+<span style='color:maroon;font-weight:600'>*3)çizgi grafik oluşturun ve grafiğe Sv_mean_plot adını atayın.*
+
+<span style='color:maroon;font-weight:600'>*4)Alt panelde, ggplot2 grafiğine depth_plot(y ekseni) ve rota çizgisi(x ekseni) olacak şekilde çizgi grafik oluşturun . Y eksenini ters çevirin ve grafiğe bathymetry adını atayın.*
+
+<span style='color:maroon;font-weight:600'>*5)Patchwork ile arsayı üst üste düzenleyebilirsiniz.*
+
+
+
+
+```{r}
+# Üst panel
+
+Sv_mean_plot<-ggplot(Sv_and_depth, aes(Distance_along,Sv_mean))+
+  geom_line()+
+  labs(y=expression(mean~volume~backscatter~s[v]~(dB)))+
+  theme(axis.title.x=element_blank())
+
+# Alt panel
+
+bathymetry<-ggplot(Sv_and_depth,aes(Distance_along,depth_plot))+
+  geom_line(size=0.5)+
+  scale_y_reverse()+   #y ekseni ters çevrildi.
+  labs(x="Distance along trackline (m)",y="Depth(m)")  
+#x ve y ekseni isimlendirildi.
+
+# İki paneli tek bir şekilde görüntüleyelim
+
+Sv_mean_plot/bathymetry
+```
+Oluşturduğumuz iki ayrı grafiğin x eksenleri aynı yani geminin aldığı yolu temsil ederken y eksenleri sırasıyla geri saçılım ve derinliği ifade etmektedir.İlk grafikte negatiflik yani geri saçılım arttıkça balık yoğunluğu artar. İkinci grafikte ise max derinlikte balıkların yoğunluğunun arttığını anlayabiliriz.
+
+(Yararlandığımız kaynak: https://ggplot2.tidyverse.org/reference/scale_continuous.html , https://www.data-imaginist.com/2019/patch-it-up-and-send-it-out/ , https://stackoverflow.com/questions/17334759/subscript-letters-in-ggplot-axis-label)
+
+# 10.AŞAMA
+
+## Peki balıklar nerede?
+
+### AÇIKLAMALAR
+
+Güzel görünen grafik!!
+
+Tüm akustik geri saçılımın sadece yüzme kesesi olan balıklardan geldiğini ve daha büyük geri saçılmanın daha yüksek balık yoğunluklarını gösterdiğini varsayarsak, bu yol hattındaki balıkların çoğu nerede?
+
+### TALİMATLAR
+
+<span style='color:maroon;font-weight:600'>*200 m x 250 m Grid hücresi başına en fazla balığa sahip olan alan rota çizgisinin hangi bölümü?Bir karakter dizisi kullanarak, izleme çizgisinin hangi bölümünde en fazla balığın olduğunu belirtin.*
+
+**Seçenekler: Shelf, Shelf Break, Offshore**
+
+
+```{r}
+# Bu yol boyunca balıkların nerede olduğunu düşünüyorsun?
+
+(where_are_the_fishes<-"Shelf")
+```
+Grafik sonuçlarından balıkların yoğunluk gösterdiği bölge tespit edilmiştir. Bu bölge birçok türe yiyecek ve yaşam alanı sağlayan oldukça dinamik ve verimli bir alan olan Shelf bölgesidir.
+
+
+
+```{r echo=FALSE, fig.align='center', out.width='100%'}
+knitr::include_graphics('C:/Users/yasem/OneDrive/Masaüstü/balık.jpg')
+```
+
+
+# GitHub LİNKİ
+
+https://github.com/yaseminhzrc/BaliklarNerede
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
