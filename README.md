@@ -1,4 +1,4 @@
-# Where-Are-the-Fishes-
+# Where Are the Fishes
 Exploring acoustic backscatter data to find fish in the US Atlantic Ocean. 
 
 Reflections. No, I’m not talking about contemplating your existence within the Tidyverse or understanding what that spline did to your data. I’m talking about echoes. Specifically, acoustic echoes called “backscatter.” Marine scientists use acoustic backscatter to understand the distribution of organisms in the ocean.
