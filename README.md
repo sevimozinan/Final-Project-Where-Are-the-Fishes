@@ -1,6 +1,6 @@
 # FINAL PROJECT Where Are the Fishes? 
 
-# My project of Statistical Analysis Software (Rstudio) at Marmara University.
+My project of Statistical Analysis Software (Rstudio) at Marmara University.
 
 Exploring acoustic backscatter data to find fish in the US Atlantic Ocean. 
 
