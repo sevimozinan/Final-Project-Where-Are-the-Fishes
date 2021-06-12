@@ -12,7 +12,8 @@ In this analysis, together with Sevim Ozinan, Mehtap Fil and Yasemin Hizarci we 
 
 These acoustic data were collected from a research vessel that crossed the shelf break in the Mid-Atlantic Bight (NOAA cruise HB1103) and were preprocessed using the software, Echoview.
 
-# Stages in this project
+# Stages in this project:
+
 1. Backscatter - remote sensing in the ocean (Load the libraries)
 2. What is the "shelf break"? (Clean the bottom data and then inspect the data )
 3. Where ever you go, there you are (Plot the ship's track, plot the depth of the sea floor along the ship's track, arrange the plots side by side for easier viewing)
