@@ -24,4 +24,3 @@ These acoustic data were collected from a research vessel that crossed the shelf
 9. Putting it all together (Group bottom_clean and calculate the mean depth, join the bottom intervals data to the acoustic data)
 10. So, where are the fishes? (If we assume that all the acoustic backscatter is only from fishes with swim bladders, and greater backscatter indicates higher densities of fish, where are most of the fish on this track line? Options: Shelf, Shelf Break, Offshore)
 
-![Imgur Image](https://imgur.com/pkiy5ay.jpg)
